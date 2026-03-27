@@ -23,7 +23,7 @@ import {
   ChevronDown
 } from 'lucide-react'
 
-const API_BASE = '/api'
+const API_BASE = 'https://task-management-psi-sandy-64.vercel.app/api'
 
 // Auth Context
 const AuthContext = React.createContext(null)
