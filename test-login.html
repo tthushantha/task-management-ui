@@ -32,11 +32,32 @@
         async function testLogin() {
             addResult('Testing login functionality with CORS credentials...', 'loading');
             
+            // Debug: Show current origin
+            const currentOrigin = window.location.origin;
+            addResult(`DEBUG: Current origin: ${currentOrigin}`, 'info');
+            
+            // Debug: Show API base
+            addResult(`DEBUG: API base: ${API_BASE}`, 'info');
+            
             try {
                 // Test 1: Check CORS preflight
                 addResult('Test 1: Testing CORS preflight request...', 'loading');
                 const preflightResponse = await axios.options(`${API_BASE}/login`);
-                addResult(`Test 1: CORS preflight successful! Headers: ${JSON.stringify(preflightResponse.headers)}`, 'success');
+                
+                // Check CORS headers
+                const allowOrigin = preflightResponse.headers['access-control-allow-origin'];
+                const allowCredentials = preflightResponse.headers['access-control-allow-credentials'];
+                
+                addResult(`Test 1: CORS preflight successful!`, 'success');
+                addResult(`Test 1: Allow-Origin: ${allowOrigin}`, 'success');
+                addResult(`Test 1: Allow-Credentials: ${allowCredentials}`, 'success');
+                
+                if (!allowOrigin) {
+                    addResult('Test 1: WARNING - No Access-Control-Allow-Origin header found!', 'error');
+                }
+                if (allowCredentials !== 'true') {
+                    addResult('Test 1: WARNING - Access-Control-Allow-Credentials is not true!', 'error');
+                }
                 
                 // Test 2: Login with correct credentials
                 addResult('Test 2: Attempting login with admin credentials...', 'loading');
