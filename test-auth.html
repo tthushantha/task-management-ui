@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Authentication Test</h1>
+    <div id="status">Testing...</div>
+    
+    <script>
+        // Configure axios to include credentials
+        axios.defaults.withCredentials = true;
+        
+        const API_BASE = 'http://127.0.0.1:8000/api';
+        
+        async function testAuth() {
+            const statusDiv = document.getElementById('status');
+            
+            try {
+                // Try to login
+                console.log('Attempting login...');
+                const loginResponse = await axios.post(`${API_BASE}/login`, {
+                    username: 'admin',
+                    password: 'admin123'
+                });
+                console.log('Login response:', loginResponse.data);
+                
+                // Try to create a task
+                console.log('Attempting to create task...');
+                const taskResponse = await axios.post(`${API_BASE}/tasks`, {
+                    title: 'Test Task from Auth Fix',
+                    description: 'This is a test to verify authentication works',
+                    priority: 'medium',
+                    status: 'todo'
+                });
+                console.log('Task creation response:', taskResponse.data);
+                
+                statusDiv.innerHTML = '<p style="color: green;">✅ Authentication and task creation working!</p>';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.innerHTML = `<p style="color: red;">❌ Error: ${error.response?.data?.detail || error.message}</p>`;
+            }
+        }
+        
+        testAuth();
+    </script>
+</body>
+</html>
