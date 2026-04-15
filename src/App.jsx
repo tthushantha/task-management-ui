@@ -16,10 +16,18 @@ import {
   AlertTriangle,
   User,
   Menu,
-  ChevronDown
+  ChevronDown,
+  Bell,
+  X
 } from 'lucide-react'
 
 const API_BASE = 'https://task-management-psi-sandy-64.vercel.app'
+
+// Notification Context
+const NotificationContext = React.createContext(null)
+function useNotifications() {
+  return React.useContext(NotificationContext)
+}
 
 // Auth Context
 const AuthContext = React.createContext(null)
@@ -35,6 +43,191 @@ function ProtectedRoute({ children }) {
   if (!user) return <Navigate to="/login" replace />
 
   return children
+}
+
+// Notification Provider
+function NotificationProvider({ children }) {
+  const [notifications, setNotifications] = useState([])
+  const { user } = useAuth()
+
+  // Fetch notifications (simulated - in real app this would be an API call)
+  const fetchNotifications = async () => {
+    if (!user) return
+    
+    try {
+      // For now, we'll simulate notifications by checking for recently assigned tasks
+      // In a real implementation, you would have a dedicated notifications endpoint
+      const response = await axios.get(`${API_BASE}/tasks`)
+      const tasks = response.data.tasks || []
+      
+      // Find tasks assigned to current user that were created recently (last 5 minutes)
+      const recentTasks = tasks.filter(task => {
+        if (!task.assignee_name || task.assignee_name === 'Unassigned') return false
+        if (task.assignee_name !== user.username && task.assignee_name !== user.full_name) return false
+        
+        // Check if task was created recently (simulated - in real app you'd have created_at field)
+        const taskTime = new Date(task.created_at || Date.now())
+        const now = new Date()
+        const timeDiff = (now - taskTime) / (1000 * 60) // minutes
+        return timeDiff < 5 // Tasks created in last 5 minutes
+      })
+
+      // Convert tasks to notifications
+      const newNotifications = recentTasks.map(task => ({
+        id: `task-${task.id}`,
+        type: 'task_assigned',
+        message: `You have been assigned a new task: "${task.title}"`,
+        created_at: task.created_at || new Date().toISOString(),
+        read: false,
+        taskId: task.id
+      }))
+
+      // Add new notifications that don't already exist
+      setNotifications(prev => {
+        const existingIds = prev.map(n => n.id)
+        const trulyNew = newNotifications.filter(n => !existingIds.includes(n.id))
+        return [...trulyNew, ...prev]
+      })
+    } catch (err) {
+      console.error('Error fetching notifications:', err)
+    }
+  }
+
+  // Poll for notifications every 30 seconds
+  useEffect(() => {
+    if (!user) return
+    
+    fetchNotifications() // Initial fetch
+    const interval = setInterval(fetchNotifications, 30000) // Poll every 30 seconds
+    
+    return () => clearInterval(interval)
+  }, [user])
+
+  const markAsRead = (notificationId) => {
+    setNotifications(prev => 
+      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+    )
+  }
+
+  const clearNotifications = () => {
+    setNotifications([])
+  }
+
+  const unreadCount = notifications.filter(n => !n.read).length
+
+  return (
+    <NotificationContext.Provider value={{
+      notifications,
+      unreadCount,
+      markAsRead,
+      clearNotifications,
+      fetchNotifications
+    }}>
+      {children}
+    </NotificationContext.Provider>
+  )
+}
+
+// Notification Component
+function NotificationDropdown() {
+  const { notifications, unreadCount, markAsRead, clearNotifications } = useNotifications()
+  const [isOpen, setIsOpen] = useState(false)
+  const navigate = useNavigate()
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.notification-dropdown')) {
+        setIsOpen(false)
+      }
+    }
+    
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isOpen])
+
+  const handleNotificationClick = (notification) => {
+    markAsRead(notification.id)
+    setIsOpen(false)
+    if (notification.taskId) {
+      navigate(`/tasks/${notification.taskId}`)
+    }
+  }
+
+  return (
+    <div className="notification-dropdown relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="relative p-2 rounded-md hover:bg-blue-700 transition"
+      >
+        <Bell className="h-5 w-5" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+            {unreadCount}
+          </span>
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+          <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 className="font-semibold text-gray-800">Notifications</h3>
+            {notifications.length > 0 && (
+              <button
+                onClick={clearNotifications}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
+          
+          <div className="max-h-96 overflow-y-auto">
+            {notifications.length > 0 ? (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-800">
+                        {notification.type === 'task_assigned' ? 'New Task Assigned' : 'Notification'}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                      <p className="text-xs text-gray-400 mt-2">
+                        {new Date(notification.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                    {!notification.read && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          markAsRead(notification.id)
+                        }}
+                        className="ml-2 text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-8 text-center">
+                <Bell className="h-12 w-12 text-gray-300 mx-auto" />
+                <p className="text-gray-500 mt-2">No notifications</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
 // Layout
@@ -68,6 +261,10 @@ function Layout({ children }) {
                 <FolderKanban className="h-5 w-5" />
                 <span>Projects</span>
               </Link>
+              
+              <div className="notification-dropdown">
+                <NotificationDropdown />
+              </div>
               
               <button
                 onClick={logout}
@@ -105,6 +302,9 @@ function Layout({ children }) {
               <FolderKanban className="h-5 w-5 inline mr-2" />
               Projects
             </Link>
+            <div className="px-3 py-2">
+              <NotificationDropdown />
+            </div>
             <button onClick={logout} className="block w-full text-left px-3 py-2 rounded-md hover:bg-blue-800">
               <LogOut className="h-5 w-5 inline mr-2" />
               Logout
@@ -597,37 +797,39 @@ function App() {
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>
-      <Router>
-        <Routes>
+      <NotificationProvider>
+        <Router>
+          <Routes>
 
-          <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage />} />
 
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Layout>
-                <DashboardPage />
-              </Layout>
-            </ProtectedRoute>
-          } />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Layout>
+                  <DashboardPage />
+                </Layout>
+              </ProtectedRoute>
+            } />
 
-          <Route path="/tasks" element={
-            <ProtectedRoute>
-              <Layout>
-                <TasksPage />
-              </Layout>
-            </ProtectedRoute>
-          } />
+            <Route path="/tasks" element={
+              <ProtectedRoute>
+                <Layout>
+                  <TasksPage />
+                </Layout>
+              </ProtectedRoute>
+            } />
 
-          <Route path="/tasks/new" element={
-            <ProtectedRoute>
-              <Layout>
-                <TaskFormPage />
-              </Layout>
-            </ProtectedRoute>
-          } />
+            <Route path="/tasks/new" element={
+              <ProtectedRoute>
+                <Layout>
+                  <TaskFormPage />
+                </Layout>
+              </ProtectedRoute>
+            } />
 
-        </Routes>
-      </Router>
+          </Routes>
+        </Router>
+      </NotificationProvider>
     </AuthContext.Provider>
   )
 }
