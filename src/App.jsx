@@ -50,7 +50,7 @@ function Layout({ children }) {
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2">
                 <LayoutDashboard className="h-8 w-8" />
-                <span className="text-xl font-bold">Task Manager</span>
+                <span className="text-xl font-bold">Task Manager App</span>
               </Link>
             </div>
             
