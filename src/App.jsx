@@ -125,16 +125,24 @@ function Layout({ children }) {
 function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { login } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setError('')
+    setLoading(true)
+    
     try {
       await login(username, password)
       navigate('/')
     } catch (error) {
+      setError(error.message || 'Login failed. Please try again.')
       console.error('Login failed:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -147,15 +155,23 @@ function LoginPage() {
           <p className="text-gray-600 mt-2">Sign in to your account</p>
         </div>
         
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4">
+            {error}
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
             <input 
               type="text"
               placeholder="Enter your username" 
+              value={username}
               onChange={e => setUsername(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              disabled={loading}
             />
           </div>
           <div>
@@ -163,16 +179,19 @@ function LoginPage() {
             <input 
               type="password" 
               placeholder="Enter your password"
+              value={password}
               onChange={e => setPassword(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              disabled={loading}
             />
           </div>
           <button 
             type="submit" 
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-blue-400 transition duration-200"
           >
-            Sign In
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
         
@@ -523,8 +542,10 @@ function App() {
     // Check if user is logged in by verifying session with backend
     const checkAuth = async () => {
       try {
-        await axios.get(`${API_BASE}/dashboard/stats`)
+        const response = await axios.get(`${API_BASE}/dashboard/stats`)
         // If we can access dashboard stats, we're authenticated
+        // We don't get user info from stats, so we'll set a basic user state
+        setUser({ username: 'authenticated', full_name: 'User' })
         setLoading(false)
       } catch (err) {
         // Not authenticated, clear user state
@@ -536,18 +557,32 @@ function App() {
   }, [])
 
   const login = async (username, password) => {
-    const response = await axios.post(`${API_BASE}/login`, {
-      username,
-      password
-    }, {
-      headers: {
-        'Content-Type': 'application/json'
+    try {
+      const response = await axios.post(`${API_BASE}/login`, {
+        username,
+        password
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (response.data.username) {
+        setUser({ username: response.data.username, full_name: username })
+        return response.data
+      } else {
+        throw new Error('Invalid credentials')
       }
-    })
-    if (response.data.username) {
-      setUser({ username: response.data.username, full_name: username })
-    } else {
-      throw new Error('Login failed')
+    } catch (err) {
+      if (err.response?.data?.detail) {
+        throw new Error(err.response.data.detail)
+      } else if (err.response?.status === 401) {
+        throw new Error('Invalid username or password')
+      } else if (err.response?.status === 500) {
+        throw new Error('Server error. Please try again later.')
+      } else {
+        throw new Error('Login failed. Please check your connection.')
+      }
     }
   }
 

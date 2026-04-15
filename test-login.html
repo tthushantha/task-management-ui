@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .loading { background-color: #fff3cd; border-color: #ffeaa7; }
+    </style>
+</head>
+<body>
+    <h1>Login Functionality Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        // Configure axios to include credentials
+        axios.defaults.withCredentials = true;
+        
+        const API_BASE = 'https://task-management-psi-sandy-64.vercel.app';
+        const results = document.getElementById('results');
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        async function testLogin() {
+            addResult('Testing login functionality with CORS credentials...', 'loading');
+            
+            try {
+                // Test 1: Check CORS preflight
+                addResult('Test 1: Testing CORS preflight request...', 'loading');
+                const preflightResponse = await axios.options(`${API_BASE}/login`);
+                addResult(`Test 1: CORS preflight successful! Headers: ${JSON.stringify(preflightResponse.headers)}`, 'success');
+                
+                // Test 2: Login with correct credentials
+                addResult('Test 2: Attempting login with admin credentials...', 'loading');
+                const loginResponse = await axios.post(`${API_BASE}/login`, {
+                    username: 'admin',
+                    password: 'admin123'
+                });
+                
+                addResult(`Test 2: Login successful! Response: ${JSON.stringify(loginResponse.data)}`, 'success');
+                addResult(`Test 2: Session cookies set: ${document.cookie}`, 'success');
+                
+                // Test 3: Verify session by accessing protected endpoint
+                addResult('Test 3: Verifying session by accessing dashboard stats...', 'loading');
+                const statsResponse = await axios.get(`${API_BASE}/dashboard/stats`);
+                
+                addResult(`Test 3: Session verified! Stats: ${JSON.stringify(statsResponse.data)}`, 'success');
+                
+                // Test 4: Logout
+                addResult('Test 4: Testing logout...', 'loading');
+                const logoutResponse = await axios.post(`${API_BASE}/logout`);
+                
+                addResult('Test 4: Logout successful!', 'success');
+                
+                // Test 5: Verify session is cleared
+                addResult('Test 5: Verifying session is cleared...', 'loading');
+                try {
+                    await axios.get(`${API_BASE}/dashboard/stats`);
+                    addResult('Test 5: ERROR - Session still active after logout!', 'error');
+                } catch (err) {
+                    addResult('Test 5: Session properly cleared after logout!', 'success');
+                }
+                
+                addResult('All tests completed!', 'success');
+                
+            } catch (error) {
+                addResult(`ERROR: ${error.message} - Status: ${error.response?.status}`, 'error');
+                console.error('Test error:', error);
+            }
+        }
+        
+        // Run tests when page loads
+        testLogin();
+    </script>
+</body>
+</html>
