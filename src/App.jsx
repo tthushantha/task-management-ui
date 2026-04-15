@@ -43,24 +43,80 @@ function Layout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <div>
-      <nav className="bg-blue-600 text-white p-4 flex justify-between">
-        <Link to="/" className="font-bold">Task Manager</Link>
-
-        <div className="hidden md:flex gap-4">
-          <Link to="/">Dashboard</Link>
-          <Link to="/tasks">Tasks</Link>
-          <Link to="/projects">Projects</Link>
-
-          <button onClick={logout}>Logout</button>
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-blue-600 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <Link to="/" className="flex items-center space-x-2">
+                <LayoutDashboard className="h-8 w-8" />
+                <span className="text-xl font-bold">Task Manager</span>
+              </Link>
+            </div>
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-4">
+              <Link to="/" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-blue-700 transition">
+                <LayoutDashboard className="h-5 w-5" />
+                <span>Dashboard</span>
+              </Link>
+              <Link to="/tasks" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-blue-700 transition">
+                <ListTodo className="h-5 w-5" />
+                <span>Tasks</span>
+              </Link>
+              <Link to="/projects" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-blue-700 transition">
+                <FolderKanban className="h-5 w-5" />
+                <span>Projects</span>
+              </Link>
+              
+              <button
+                onClick={logout}
+                className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-blue-700 transition"
+              >
+                <LogOut className="h-5 w-5" />
+                <span>Logout</span>
+              </button>
+            </div>
+            
+            {/* Mobile menu button */}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 rounded-md hover:bg-blue-700"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
         </div>
-
-        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-          <Menu />
-        </button>
+        
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="md:hidden px-2 pt-2 pb-3 space-y-1 bg-blue-700">
+            <Link to="/" className="block px-3 py-2 rounded-md hover:bg-blue-800">
+              <LayoutDashboard className="h-5 w-5 inline mr-2" />
+              Dashboard
+            </Link>
+            <Link to="/tasks" className="block px-3 py-2 rounded-md hover:bg-blue-800">
+              <ListTodo className="h-5 w-5 inline mr-2" />
+              Tasks
+            </Link>
+            <Link to="/projects" className="block px-3 py-2 rounded-md hover:bg-blue-800">
+              <FolderKanban className="h-5 w-5 inline mr-2" />
+              Projects
+            </Link>
+            <button onClick={logout} className="block w-full text-left px-3 py-2 rounded-md hover:bg-blue-800">
+              <LogOut className="h-5 w-5 inline mr-2" />
+              Logout
+            </button>
+          </div>
+        )}
       </nav>
-
-      <main className="p-4">{children}</main>
+      
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        {children}
+      </main>
     </div>
   )
 }
@@ -85,30 +141,44 @@ function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6">Login</h1>
+        <div className="text-center mb-8">
+          <LayoutDashboard className="h-16 w-16 text-blue-600 mx-auto" />
+          <h1 className="text-2xl font-bold mt-4 text-gray-800">Task Manager</h1>
+          <p className="text-gray-600 mt-2">Sign in to your account</p>
+        </div>
+        
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input 
-            placeholder="username" 
-            onChange={e => setUsername(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            required
-          />
-          <input 
-            type="password" 
-            placeholder="password"
-            onChange={e => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            required
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <input 
+              type="text"
+              placeholder="Enter your username" 
+              onChange={e => setUsername(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input 
+              type="password" 
+              placeholder="Enter your password"
+              onChange={e => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
           <button 
             type="submit" 
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
           >
-            Login
+            Sign In
           </button>
         </form>
-        <div className="mt-4 text-sm text-gray-600">
-          <p>Demo credentials: admin / admin123</p>
+        
+        <div className="mt-6 text-center text-sm text-gray-600">
+          <p>Demo Credentials:</p>
+          <p className="font-mono mt-1">admin / admin123</p>
         </div>
       </div>
     </div>
@@ -136,36 +206,110 @@ function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-
-      <div style={{ display: 'flex', gap: 20, marginBottom: 30 }}>
-        <div className="bg-white p-4 rounded shadow">
-          <div>Total: {stats.total_tasks}</div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+        <p className="text-gray-600 mt-2">Welcome back! Here's your task overview.</p>
+      </div>
+      
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-600">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-gray-500 text-sm">Total Tasks</p>
+              <p className="text-3xl font-bold text-gray-800">{stats?.total_tasks || 0}</p>
+            </div>
+            <ListTodo className="h-12 w-12 text-blue-600 opacity-50" />
+          </div>
         </div>
-        <div className="bg-white p-4 rounded shadow">
-          <div>In Progress: {stats.in_progress_tasks}</div>
+        
+        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-yellow-500">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-gray-500 text-sm">In Progress</p>
+              <p className="text-3xl font-bold text-gray-800">{stats?.in_progress_tasks || 0}</p>
+            </div>
+            <Clock className="h-12 w-12 text-yellow-500 opacity-50" />
+          </div>
         </div>
-        <div className="bg-white p-4 rounded shadow">
-          <div>Done: {stats.done_tasks}</div>
+        
+        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-gray-500 text-sm">Completed</p>
+              <p className="text-3xl font-bold text-gray-800">{stats?.done_tasks || 0}</p>
+            </div>
+            <CheckCircle className="h-12 w-12 text-green-500 opacity-50" />
+          </div>
         </div>
-        <div className="bg-white p-4 rounded shadow">
-          <div>Overdue: {stats.overdue_tasks}</div>
+        
+        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-gray-500 text-sm">Overdue</p>
+              <p className="text-3xl font-bold text-gray-800">{stats?.overdue_tasks || 0}</p>
+            </div>
+            <AlertTriangle className="h-12 w-12 text-red-500 opacity-50" />
+          </div>
         </div>
       </div>
-
-      <div className="bg-white p-6 rounded shadow">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Recent Tasks</h2>
-          <Link to="/tasks/new" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      
+      {/* Recent Tasks */}
+      <div className="bg-white rounded-lg shadow-md">
+        <div className="p-6 border-b flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-800">Recent Tasks</h2>
+          <Link to="/tasks/new" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center">
+            <Plus className="h-5 w-5 mr-2" />
             New Task
           </Link>
         </div>
-        {stats.recent_tasks?.map(task => (
-          <div key={task.id} className="border-b p-3">
-            <div className="font-semibold">{task.title}</div>
-            <div className="text-sm text-gray-500">{task.project_name}</div>
-          </div>
-        ))}
+        
+        <div className="p-6">
+          {stats?.recent_tasks?.length > 0 ? (
+            <div className="space-y-4">
+              {stats.recent_tasks.map((task) => (
+                <Link
+                  key={task.id}
+                  to={`/tasks/${task.id}`}
+                  className="block p-4 border rounded-lg hover:bg-gray-50 transition"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-gray-800">{task.title}</h3>
+                      <p className="text-sm text-gray-500 mt-1">{task.project_name || 'No Project'}</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        task.status === 'done' ? 'bg-green-100 text-green-800' :
+                        task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                        task.status === 'review' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {task.status?.replace('_', ' ') || 'todo'}
+                      </span>
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        task.priority === 'urgent' ? 'bg-red-100 text-red-800' :
+                        task.priority === 'high' ? 'bg-yellow-100 text-yellow-800' :
+                        task.priority === 'medium' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {task.priority || 'medium'}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <ListTodo className="h-16 w-16 text-gray-300 mx-auto" />
+              <p className="text-gray-500 mt-4">No tasks yet. Create your first task!</p>
+              <Link to="/tasks/new" className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                Create Task
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -190,20 +334,60 @@ function TasksPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Tasks</h1>
-        <Link to="/tasks/new" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">Tasks</h1>
+        <Link to="/tasks/new" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center">
+          <Plus className="h-5 w-5 mr-2" />
           New Task
         </Link>
       </div>
       
-      <div className="bg-white rounded shadow">
-        {tasks.map(t => (
-          <div key={t.id} className="border-b p-4">
-            <div className="font-semibold">{t.title}</div>
-            <div className="text-sm text-gray-500">{t.project_name} • {t.assignee_name}</div>
+      {/* Tasks List */}
+      <div className="bg-white rounded-lg shadow-md">
+        {tasks.length > 0 ? (
+          <div className="divide-y">
+            {tasks.map((task) => (
+              <div key={task.id} className="p-4 hover:bg-gray-50 transition">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div>
+                      <h3 className="font-semibold text-gray-800">{task.title}</h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {task.project_name || 'No Project'} • {task.assignee_name || 'Unassigned'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      task.status === 'done' ? 'bg-green-100 text-green-800' :
+                      task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                      task.status === 'review' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {task.status?.replace('_', ' ') || 'todo'}
+                    </span>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      task.priority === 'urgent' ? 'bg-red-100 text-red-800' :
+                      task.priority === 'high' ? 'bg-yellow-100 text-yellow-800' :
+                      task.priority === 'medium' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {task.priority || 'medium'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        ) : (
+          <div className="p-8 text-center">
+            <ListTodo className="h-16 w-16 text-gray-300 mx-auto" />
+            <p className="text-gray-500 mt-4">No tasks found.</p>
+            <Link to="/tasks/new" className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+              Create Task
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -242,47 +426,48 @@ function TaskFormPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="bg-white p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-6">Create New Task</h1>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">Create New Task</h1>
         
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4">
             {error}
           </div>
         )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Title *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
             <input
               type="text"
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
               rows="4"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter task description..."
             />
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Priority</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
               <select
                 name="priority"
                 value={formData.priority}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -292,12 +477,12 @@ function TaskFormPage() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="todo">To Do</option>
                 <option value="in_progress">In Progress</option>
@@ -307,18 +492,18 @@ function TaskFormPage() {
             </div>
           </div>
           
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between pt-6">
             <button
               type="button"
               onClick={() => navigate('/tasks')}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-200"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400"
+              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400 transition duration-200"
             >
               {loading ? 'Creating...' : 'Create Task'}
             </button>
