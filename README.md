@@ -49,7 +49,7 @@ Start the development server:
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`
+The application will be available at `http://localhost:3000`
 
 ### Production Build
 
@@ -140,7 +140,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ### Common Issues
 
-1. **Port already in use**: The development server might use a different port if 5173 is occupied
+1. **Port already in use**: The development server might use a different port if 3000 is occupied
 2. **Build errors**: Ensure all dependencies are properly installed
 3. **API connection issues**: Verify the backend API is running and accessible
 
