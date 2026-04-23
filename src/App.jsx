@@ -257,11 +257,7 @@ function Layout({ children }) {
                 <ListTodo className="h-5 w-5" />
                 <span>Tasks</span>
               </Link>
-              <Link to="/projects" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-blue-700 transition">
-                <FolderKanban className="h-5 w-5" />
-                <span>Projects</span>
-              </Link>
-              
+                            
               <div className="notification-dropdown">
                 <NotificationDropdown />
               </div>
@@ -298,11 +294,7 @@ function Layout({ children }) {
               <ListTodo className="h-5 w-5 inline mr-2" />
               Tasks
             </Link>
-            <Link to="/projects" className="block px-3 py-2 rounded-md hover:bg-blue-800">
-              <FolderKanban className="h-5 w-5 inline mr-2" />
-              Projects
-            </Link>
-            <div className="px-3 py-2">
+                        <div className="px-3 py-2">
               <NotificationDropdown />
             </div>
             <button onClick={logout} className="block w-full text-left px-3 py-2 rounded-md hover:bg-blue-800">
